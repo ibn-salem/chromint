@@ -1,0 +1,16 @@
+Package: chromint
+Title: Analysis of chromatin interaction frequencies between pairs of genomic
+    regions
+Version: 0.0.0.9000
+Authors@R: person("Jonas", "Ibn-Salem", email = "j.ibn-salem@uni-mainz.de", role = c("aut", "cre"))
+Description: This package provides functions to analyse genome-wide chromatin
+    intraction data, like Hi-C. There are functions to parse high-resolution Hi-
+    C data from Rao et al. 2014, Cell to quantify intreaction frequencies between
+    pairs of genomic regions (like genes and enhancers) and randomizations to
+    compute enrichment of interactions.
+Depends:
+    R (>= 3.3.2)
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 5.0.1
