@@ -1,12 +1,9 @@
 
-# required packages
-require(InteractionSet) # for HI-C data structures
 
-#' get bins of a single chromosome.
+#' Get bins of a single chromosome.
 #'
-#' This function returns a GRanges object with bins of a single chromosome by
-#' given bin size.
-#'
+#' This function returns a \code{\link[GenomicRanges]{GRanges}} object with bins of a single
+#' chromosome by given bin size.
 #' @param chr Chromosome name
 #' @param resolution The bin size resolution in base pairs
 #' @param seqInfo A seqinfo object holding the length of each chromosome.
@@ -15,6 +12,7 @@ require(InteractionSet) # for HI-C data structures
 #' library(TxDb.Hsapiens.UCSC.hg19.ensGene)
 #' txdb <- TxDb.Hsapiens.UCSC.hg19.ensGene
 #' binGR <- getBinGR("chr1", 50000, seqinfo(txdb))
+#' @keywords internal
 #'
 getBinGR <- function(chr, resolution, seqInfo){
   options("scipen"=999)
@@ -36,7 +34,7 @@ getBinGR <- function(chr, resolution, seqInfo){
 #' Get bin offset for each chromosome.
 #'
 #' This function creates offset of bin indices for each chromosome.
-#' @param chromosomes A vector of strings with chromosome identifiers
+#' @param chromosomes Character vecotr with chromosome identifiers.
 #' @param resolution The bin size resolution in base pairs
 #' @param seqInfo A seqinfo object holding the length of each chromosome.
 #' @return A numeric vector with offset for each chromosome.
@@ -44,7 +42,7 @@ getBinGR <- function(chr, resolution, seqInfo){
 #' library(TxDb.Hsapiens.UCSC.hg19.ensGene)
 #' txdb <- TxDb.Hsapiens.UCSC.hg19.ensGene
 #' offset <- getChrToBinOffset(c("chr1", "chr2"), 50000, seqinfo(txdb))
-#'
+#' @keywords internal
 getChrToBinOffset <- function(chromosomes, resolution, seqInfo){
 
 	# get length of all chromosomes
@@ -63,7 +61,7 @@ getChrToBinOffset <- function(chromosomes, resolution, seqInfo){
 }
 
 
-#' A parse Hi-C interactions from Rao et. al 2014 as GInteractions object
+#' Parse Hi-C interactions from Rao et. al 2014 as GInteractions object.
 #'
 #' This function parses interactions from a single experiment by a given
 #' resolution.

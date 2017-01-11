@@ -7,11 +7,14 @@
 getChrToBinOffset(chromosomes, resolution, seqInfo)
 }
 \arguments{
-\item{chromosomes}{A vector of strings with chromosome identifiers}
+\item{chromosomes}{Character vecotr with chromosome identifiers.}
 
-\item{resolution}{The bin size resolution in bp}
+\item{resolution}{The bin size resolution in base pairs}
 
 \item{seqInfo}{A seqinfo object holding the length of each chromosome.}
+}
+\value{
+A numeric vector with offset for each chromosome.
 }
 \description{
 This function creates offset of bin indices for each chromosome.
@@ -20,6 +23,6 @@ This function creates offset of bin indices for each chromosome.
 library(TxDb.Hsapiens.UCSC.hg19.ensGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.ensGene
 offset <- getChrToBinOffset(c("chr1", "chr2"), 50000, seqinfo(txdb))
-  
 }
+\keyword{internal}
 
