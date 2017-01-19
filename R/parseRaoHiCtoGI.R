@@ -9,8 +9,8 @@
 #' @param seqInfo A seqinfo object holding the length of each chromosome.
 #' @return A GRanges object with bins
 #' @examples
-#' library(TxDb.Hsapiens.UCSC.hg19.ensGene)
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.ensGene
+#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 #' binGR <- getBinGR("chr1", 50000, seqinfo(txdb))
 #' @keywords internal
 #'
@@ -39,8 +39,8 @@ getBinGR <- function(chr, resolution, seqInfo){
 #' @param seqInfo A seqinfo object holding the length of each chromosome.
 #' @return A numeric vector with offset for each chromosome.
 #' @examples
-#' library(TxDb.Hsapiens.UCSC.hg19.ensGene)
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.ensGene
+#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 #' offset <- getChrToBinOffset(c("chr1", "chr2"), 50000, seqinfo(txdb))
 #' @keywords internal
 getChrToBinOffset <- function(chromosomes, resolution, seqInfo){

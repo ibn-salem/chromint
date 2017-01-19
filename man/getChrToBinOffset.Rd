@@ -20,8 +20,8 @@ A numeric vector with offset for each chromosome.
 This function creates offset of bin indices for each chromosome.
 }
 \examples{
-library(TxDb.Hsapiens.UCSC.hg19.ensGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.ensGene
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 offset <- getChrToBinOffset(c("chr1", "chr2"), 50000, seqinfo(txdb))
 }
 \keyword{internal}
