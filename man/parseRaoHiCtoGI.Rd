@@ -24,7 +24,7 @@ distance. Default is FALSE.}
 is "MAPQGE30".}
 
 \item{normStr}{String representation of the normalization method. Default is
-"KR".}
+"KR". This is not implemented yet.}
 }
 \value{
 GInteractions object with all cis- and trans-interactions

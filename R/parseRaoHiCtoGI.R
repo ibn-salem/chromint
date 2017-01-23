@@ -76,9 +76,10 @@ getChrToBinOffset <- function(chromosomes, resolution, seqInfo){
 #' @param mapQualStr String representing the mapping quality threshold. Defualt
 #'   is "MAPQGE30".
 #' @param normStr String representation of the normalization method. Default is
-#'   "KR".
+#'   "KR". This is not implemented yet.
 #' @keywords Hi-C
 #' @return GInteractions object with all cis- and trans-interactions
+#' @export
 parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
                             normalizeByExpected=FALSE, mapQualStr="MAPQGE30",
                             normStr="KR"){
@@ -112,13 +113,20 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   # /project/jgu-cbdm/ibnsalem/translocations/data/Rao2014/K562_interchromosomal/50kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_50kb.RAWobserved
 
   # build path to directory with chromosome subdirectories
-  intraDir = file.path(baseDir, ifelse(cell != "GM12878", cell, pate0(cell, "_combined")),
+  intraDir = file.path(baseDir, ifelse(cell != "GM12878", cell, paste0(cell, "_combined")),
                        paste0(resStr, "_resolution_intrachromosomal"))
+  message("INFO: Start parsing from director: ", intraDir)
 
   # get all available chromosome names:
-  chromosomes = list.dirs(path =intraDir , full.names = FALSE,
+  chromosomes = list.dirs(path=intraDir , full.names = FALSE,
                           recursive = FALSE)
-	# sort
+
+  # throw a meaningfull error here if path is wrong
+  if( length(chromosomes) == 0 ){
+    stop("Could not find chromosomes in ", intraDir)
+  }
+
+  # sort
 	chromOrder <- match(seqnames(seqInfo), chromosomes)
 	chromosomes <- chromosomes[chromOrder[!is.na(chromOrder)]]
 
@@ -132,26 +140,19 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 	# get bin offsets
 	binOffset <- getChrToBinOffset(chromosomes, resolution, seqInfo)
 
-	# help function to get from bin position to index in GRanges
-	posToIdx <- function(pos, resolution){
-		(pos / resolution) + 1
-	}
-
 	#--------------------------------------------------------------------
 	# parse intra-chromosomal interactions
 	#--------------------------------------------------------------------
 
-	cisDFlist <- bplapply(chromosomes, function(chr){
+	cisDFlist <- BiocParallel::bplapply(chromosomes, function(chr){
 
     message(paste("INFO: Begin to parse data for chromosome", chr, "..."))
 
     # get file path
 	  rawInteractionFile = file.path(intraDir, chr, mapQualStr, paste0(chr, "_", resStr, ".RAWobserved"))
 
-
-
 		# parse interaction file
-		intData <- data.frame(fread(rawInteractionFile))
+		intData <- data.frame(data.table::fread(rawInteractionFile))
 
 		# get anchor bins as GRanges object
 		anchorIdx1 <- binOffset[chr] + (intData[,1] / resolution) +1
@@ -170,25 +171,45 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 
 	# build path to directory with chromosome subdirectories
 	interDir = file.path(baseDir,
-	                     paste0(ifelse(cell != "GM12878", cell, pate0(cell, "_combined")),
-	                            "_interchromosomal"),
-	                     paste0(resStr, "_resolution_interchromosomal"))
+	                     paste0(
+	                       ifelse(cell != "GM12878", cell, paste0(cell, "_combined")),
+	                       "_interchromosomal"),
+	                        paste0(resStr, "_resolution_interchromosomal"))
+
+	message("INFO: Start parsing from director: ", interDir)
 
 
 	# get all chromosome pair combination (ordered)
 	chromPairs <- t(combn(chromosomes, 2))
 
-	transDFlist <- bpmapply(function(chr1, chr2){
+	transDFlist <- BiocParallel::bpmapply(function(chr1, chr2){
 
 	  message(paste("INFO: Begin to parse interactions between chromosome", chr1, "and", chr2 , "..."))
 
 		# get file path
 		# Example file:	#K562_interchromosomal/100kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_100kb.RAWobserved
+	  # baseDir,
+	  # paste0(
+	  #   ifelse(cell != "GM12878", cell, paste0(cell, "_combined")),
+	  #   "_interchromosomal"
+	  # ),
+	  # paste0(resStr, "_resolution_interchromosomal")
 
-    rawInteractionFile = file.path(baseDir, paste0(cell, "_interchromosomal"), paste0(resStr, "_resolution_interchromosomal"), paste0(chr1, "_", chr2), mapQualStr, paste0(chr1, "_", gsub("chr", "", chr2), "_", resStr, ".RAWobserved"))
+    rawInteractionFile = file.path(
+      interDir,
+      paste0(chr1, "_", chr2),
+      mapQualStr,
+      paste0(
+        chr1,
+        "_",
+        gsub("chr", "", chr2),
+        "_",
+        resStr,
+        ".RAWobserved")
+      )
 
 		# parse interaction file
-		intData <- data.frame(fread(rawInteractionFile))
+		intData <- data.frame(data.table::fread(rawInteractionFile))
 
 		# get anchor bins as GRanges object
 		anchorIdx1 <- binOffset[chr1] + (intData[,1] / resolution) +1
@@ -202,10 +223,15 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 	}, chromPairs[,1], chromPairs[,2], SIMPLIFY=FALSE)
 
   # combine all data.frames into a single one
-  intDF <- rbindlist(c(cisDFlist, transDFlist))
+  intDF <- as.data.frame(data.table::rbindlist(c(cisDFlist, transDFlist)))
 
 	# build GI object
-	GI <- GInteractions(intDF[,idx1], intDF[,idx2], binGR, raw=intDF[,raw], mode="strict")
+	GI <- InteractionSet::GInteractions(
+	  intDF[, 1],
+	  intDF[, 2],
+	  binGR,
+	  raw=intDF[, 3],
+	  mode="strict")
 
 	# get size of object
 	#format(object.size(GI), units = "auto")
