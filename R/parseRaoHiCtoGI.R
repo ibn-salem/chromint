@@ -68,17 +68,18 @@ getChrToBinOffset <- function(chromosomes, resolution, seqInfo){
 #'
 #' @param cell The cell type of the input experiment
 #' @param resolution The matrix resolution of the Hi-C map in bp
-#' @param dirPrefix The path to the directory with the Hi-C data as string
+#' @param baseDir The path to the directory with the Hi-C data. This should
+#'   contain subdirectories for each cell-type
 #' @param seqInfo A seqinfo object of the genome
 #' @param normalizeByExpected Should contact frequencies be normalized by
-#' distance. Default is FALSE.
-#' @param mapQualStr String representing the mapping quality threshold.
-#' Defualt is "MAPQGE30".
-#' @param normStr String representation of the normalization method.
-#' Default is "KR".
+#'   distance. Default is FALSE.
+#' @param mapQualStr String representing the mapping quality threshold. Defualt
+#'   is "MAPQGE30".
+#' @param normStr String representation of the normalization method. Default is
+#'   "KR".
 #' @keywords Hi-C
 #' @return GInteractions object with all cis- and trans-interactions
-parseRaoHiCtoGI <- function(cell, resolution, dirPrefix, seqInfo,
+parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
                             normalizeByExpected=FALSE, mapQualStr="MAPQGE30",
                             normStr="KR"){
 
@@ -88,29 +89,34 @@ parseRaoHiCtoGI <- function(cell, resolution, dirPrefix, seqInfo,
   # K562_interchromosomal/100kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_100kb.RAWobserved
 
   # map resolution in bp to kb/mb substring:
-  res2str = c(
-      "1000"="1kb",
-      "5000"="5kb",
-      "10000"="10kb",
-      "25000"="25kb",
-      "50000"="50kb",
-      "100000"="100kb",
-      "250000"="250kb",
-      "500000"="500kb",
-      "1000000"="1mb"
-      )
+  res2str <- data.frame(
+    res=c(1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000),
+    resStr=as.character(c("1kb", "5kb", "10kb", "25kb", "50kb", "100kb", "250kb", "500kb", "1mb"))
+  )
 
-  scipenDefault <- options()$scipen
-  options("scipen"=999)
-  resStr = res2str[as.character(resolution)]
-  options("scipen"=scipenDefault)
+  # to get proper string representation of the input resolution parameter
+  resStr <- as.character(
+    res2str$resStr[match(resolution, res2str$res)]
+    )
+  if(is.na(resStr)){
+    stop("Input resolution is not supported. Input resolution: ", resolution,
+         " Only the following resolutions are supported: ",
+         paste(res2str$res, collapse=", "))
+  }
+  # example path for GM12878
+  # OLD: /project/jgu-cbdm/andradeLab/download/flat/databases/uncompressed/muro/ftp.ncbi.nlm.nih.gov/geo/series/GSE63nnn/GSE63525/suppl/GM12878_combined_interchromosomal/50kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_50kb.RAWobserved
+  # /project/jgu-cbdm/ibnsalem/translocations/data/Rao2014/GM12878_combined_interchromosomal/10kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_10kb.RAWobserved
+
+  # example for K562:
+  # /project/jgu-cbdm/ibnsalem/translocations/data/Rao2014/K562/50kb_resolution_intrachromosomal/chr1/MAPQGE30/chr1_50kb.RAWobserved
+  # /project/jgu-cbdm/ibnsalem/translocations/data/Rao2014/K562_interchromosomal/50kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_50kb.RAWobserved
 
   # build path to directory with chromosome subdirectories
-  chromDir = file.path(dirPrefix, cell,
+  intraDir = file.path(baseDir, ifelse(cell != "GM12878"), cell, pate0(cell, "_combined"),
                        paste0(resStr, "_resolution_intrachromosomal"))
 
   # get all available chromosome names:
-  chromosomes = list.dirs(path =chromDir , full.names = FALSE,
+  chromosomes = list.dirs(path =intraDir , full.names = FALSE,
                           recursive = FALSE)
 	# sort
 	chromOrder <- match(seqnames(seqInfo), chromosomes)
@@ -140,7 +146,8 @@ parseRaoHiCtoGI <- function(cell, resolution, dirPrefix, seqInfo,
     message(paste("INFO: Begin to parse data for chromosome", chr, "..."))
 
     # get file path
-    rawInteractionFile = file.path(chromDir, chr, mapQualStr, paste0(chr, "_", resStr, ".RAWobserved"))
+	  rawInteractionFile = file.path(intraDir, chr, mapQualStr, paste0(chr, "_", resStr, ".RAWobserved"))
+
 
 
 		# parse interaction file
@@ -161,6 +168,19 @@ parseRaoHiCtoGI <- function(cell, resolution, dirPrefix, seqInfo,
 	# parse intra-chromosomal interactions
 	#--------------------------------------------------------------------
 
+	# build path to directory with chromosome subdirectories
+	interDir = file.path(baseDir,
+	                     paste0(ifelse(cell != "GM12878"), cell, pate0(cell, "_combined"),
+	                            "_interchromosomal"),
+	                     paste0(resStr, "_resolution_interchromosomal"))
+
+# 	 if(cell == "GM12878"){
+#   }else{
+#     interDir = file.path(baseDir,
+#                          ifelse(cell != "GM12878"), cell, pate0(cell, "_combined"),
+#                          paste0(resStr, "_resolution_interchromosomal"))
+#   }
+
 	# get all chromosome pair combination (ordered)
 	chromPairs <- t(combn(chromosomes, 2))
 
@@ -171,7 +191,7 @@ parseRaoHiCtoGI <- function(cell, resolution, dirPrefix, seqInfo,
 		# get file path
 		# Example file:	#K562_interchromosomal/100kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_100kb.RAWobserved
 
-    rawInteractionFile = file.path(dirPrefix, paste0(cell, "_interchromosomal"), paste0(resStr, "_resolution_interchromosomal"), paste0(chr1, "_", chr2), mapQualStr, paste0(chr1, "_", gsub("chr", "", chr2), "_", resStr, ".RAWobserved"))
+    rawInteractionFile = file.path(baseDir, paste0(cell, "_interchromosomal"), paste0(resStr, "_resolution_interchromosomal"), paste0(chr1, "_", chr2), mapQualStr, paste0(chr1, "_", gsub("chr", "", chr2), "_", resStr, ".RAWobserved"))
 
 		# parse interaction file
 		intData <- data.frame(fread(rawInteractionFile))

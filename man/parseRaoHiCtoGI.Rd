@@ -4,7 +4,7 @@
 \alias{parseRaoHiCtoGI}
 \title{Parse Hi-C interactions from Rao et. al 2014 as GInteractions object.}
 \usage{
-parseRaoHiCtoGI(cell, resolution, dirPrefix, seqInfo,
+parseRaoHiCtoGI(cell, resolution, baseDir, seqInfo,
   normalizeByExpected = FALSE, mapQualStr = "MAPQGE30", normStr = "KR")
 }
 \arguments{
@@ -12,18 +12,19 @@ parseRaoHiCtoGI(cell, resolution, dirPrefix, seqInfo,
 
 \item{resolution}{The matrix resolution of the Hi-C map in bp}
 
-\item{dirPrefix}{The path to the directory with the Hi-C data as string}
+\item{baseDir}{The path to the directory with the Hi-C data. This should
+contain subdirectories for each cell-type}
 
 \item{seqInfo}{A seqinfo object of the genome}
 
 \item{normalizeByExpected}{Should contact frequencies be normalized by
 distance. Default is FALSE.}
 
-\item{mapQualStr}{String representing the mapping quality threshold.
-Defualt is "MAPQGE30".}
+\item{mapQualStr}{String representing the mapping quality threshold. Defualt
+is "MAPQGE30".}
 
-\item{normStr}{String representation of the normalization method.
-Default is "KR".}
+\item{normStr}{String representation of the normalization method. Default is
+"KR".}
 }
 \value{
 GInteractions object with all cis- and trans-interactions
