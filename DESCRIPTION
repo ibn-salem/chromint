@@ -11,6 +11,7 @@ Description: This package provides functions to analyse genome-wide chromatin
 Depends:
     R (>= 3.3.2)
 Imports:
+  data.table (>= 1.10.0),
   GenomicRanges (>= 1.24.3),
   InteractionSet (>= 1.0.4),
   TxDb.Hsapiens.UCSC.hg19.knownGene (>= 3.2.2)
