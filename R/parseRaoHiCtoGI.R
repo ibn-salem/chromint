@@ -112,7 +112,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   # /project/jgu-cbdm/ibnsalem/translocations/data/Rao2014/K562_interchromosomal/50kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_50kb.RAWobserved
 
   # build path to directory with chromosome subdirectories
-  intraDir = file.path(baseDir, ifelse(cell != "GM12878"), cell, pate0(cell, "_combined"),
+  intraDir = file.path(baseDir, ifelse(cell != "GM12878", cell, pate0(cell, "_combined")),
                        paste0(resStr, "_resolution_intrachromosomal"))
 
   # get all available chromosome names:
@@ -170,16 +170,10 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 
 	# build path to directory with chromosome subdirectories
 	interDir = file.path(baseDir,
-	                     paste0(ifelse(cell != "GM12878"), cell, pate0(cell, "_combined"),
+	                     paste0(ifelse(cell != "GM12878", cell, pate0(cell, "_combined")),
 	                            "_interchromosomal"),
 	                     paste0(resStr, "_resolution_interchromosomal"))
 
-# 	 if(cell == "GM12878"){
-#   }else{
-#     interDir = file.path(baseDir,
-#                          ifelse(cell != "GM12878"), cell, pate0(cell, "_combined"),
-#                          paste0(resStr, "_resolution_interchromosomal"))
-#   }
 
 	# get all chromosome pair combination (ordered)
 	chromPairs <- t(combn(chromosomes, 2))
