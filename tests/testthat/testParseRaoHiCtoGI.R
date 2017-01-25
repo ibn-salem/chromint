@@ -36,7 +36,6 @@ test_that("bin offset of cromosomes is increasing", {
 
 test_that("Parsing for K562 cell gives interactions", {
 
-  require(TxDb.Hsapiens.UCSC.hg19.knownGene)
   seqInfo <- seqinfo(TxDb.Hsapiens.UCSC.hg19.knownGene)
 
   cell <- "K562"
@@ -50,7 +49,6 @@ test_that("Parsing for K562 cell gives interactions", {
 
 test_that("Parsing for special case of GM12878 cell gives interactions", {
 
-  require(TxDb.Hsapiens.UCSC.hg19.knownGene)
   seqInfo <- seqinfo(TxDb.Hsapiens.UCSC.hg19.knownGene)
 
   cell <- "GM12878"

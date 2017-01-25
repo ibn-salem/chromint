@@ -8,25 +8,21 @@
 #' @param resolution The bin size resolution in base pairs
 #' @param seqInfo A seqinfo object holding the length of each chromosome.
 #' @return A GRanges object with bins
-#' @examples
-#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-#' binGR <- getBinGR("chr1", 50000, seqinfo(txdb))
 #' @keywords internal
 #'
 getBinGR <- function(chr, resolution, seqInfo){
-  options("scipen"=999)
-  chrLen = seqlengths(seqInfo)[chr]
+
+  chrLen = GenomeInfoDb::seqlengths(seqInfo)[chr]
   starts = seq(1, chrLen, resolution)
   ends = starts+resolution-1
   ends = ifelse(ends < chrLen, ends, chrLen)
   n = length(starts)
-  gr = GRanges(rep(chr, n),
-    IRanges(starts, ends),
-    names=as.character(starts-1),
+  gr = GenomicRanges::GRanges(rep(chr, n),
+    IRanges::IRanges(starts, ends),
+    names=paste0("bin_", starts-1),
     seqinfo=seqInfo
   )
-  options("scipen"=0)
+
   return(gr)
 }
 
@@ -38,15 +34,11 @@ getBinGR <- function(chr, resolution, seqInfo){
 #' @param resolution The bin size resolution in base pairs
 #' @param seqInfo A seqinfo object holding the length of each chromosome.
 #' @return A numeric vector with offset for each chromosome.
-#' @examples
-#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-#' offset <- getChrToBinOffset(c("chr1", "chr2"), 50000, seqinfo(txdb))
 #' @keywords internal
 getChrToBinOffset <- function(chromosomes, resolution, seqInfo){
 
 	# get length of all chromosomes
-	chrLen = seqlengths(seqInfo)[chromosomes]
+	chrLen = GenomeInfoDb::seqlengths(seqInfo)[chromosomes]
 
 	# get number of bins for each chromosomes
 	nBins <- ceiling(chrLen / resolution)
@@ -54,10 +46,10 @@ getChrToBinOffset <- function(chromosomes, resolution, seqInfo){
 	# get cummulative sum for offset
 	binOffset <- cumsum(c(0, nBins))[1:length(chromosomes)]
 
-	# fix names
+	# fix names because of offset
 	names(binOffset) <- chromosomes
 
-    return(binOffset)
+  return(binOffset)
 }
 
 
@@ -127,7 +119,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   }
 
   # sort
-	chromOrder <- match(seqnames(seqInfo), chromosomes)
+	chromOrder <- match(GenomeInfoDb::seqnames(seqInfo), chromosomes)
 	chromosomes <- chromosomes[chromOrder[!is.na(chromOrder)]]
 
 	# create bins for given resolution and chromosome size as GRanges object:
@@ -135,7 +127,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   names(chromBinGR) <- chromosomes
 
 	# combine to binGR for entire genome
-	binGR <-unlist(GRangesList(chromBinGR))
+	binGR <-unlist(GenomicRanges::GRangesList(chromBinGR))
 
 	# get bin offsets
 	binOffset <- getChrToBinOffset(chromosomes, resolution, seqInfo)
@@ -180,7 +172,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 
 
 	# get all chromosome pair combination (ordered)
-	chromPairs <- t(combn(chromosomes, 2))
+	chromPairs <- t(utils::combn(chromosomes, 2))
 
 	transDFlist <- BiocParallel::bpmapply(function(chr1, chr2){
 
@@ -233,10 +225,11 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 	  raw=intDF[, 3],
 	  mode="strict")
 
-	# get size of object
-	#format(object.size(GI), units = "auto")
-
-	message(paste("INFO: Finished parsing of interactions. GI object has size:", format(object.size(GI), units = "auto")))
+	# make user aware of object size
+	message(paste(
+	  "INFO: Finished parsing of interactions. GI object has size:",
+	  format(utils::object.size(GI), units = "auto")
+	  ))
 
   return(GI)
 }
