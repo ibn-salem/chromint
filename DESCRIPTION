@@ -15,7 +15,9 @@ Imports:
   GenomicRanges (>= 1.24.3),
   InteractionSet (>= 1.0.4),
   TxDb.Hsapiens.UCSC.hg19.knownGene (>= 3.2.2),
-  BiocParallel (>= 1.6.6)
+  BiocParallel (>= 1.6.6),
+    GenomeInfoDb,
+    IRanges
 Suggests: testthat
 License: GPL-3
 Encoding: UTF-8
