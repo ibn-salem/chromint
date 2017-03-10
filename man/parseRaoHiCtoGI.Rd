@@ -34,4 +34,3 @@ This function parses interactions from a single experiment by a given
 resolution.
 }
 \keyword{Hi-C}
-

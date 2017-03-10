@@ -21,4 +21,3 @@ This function returns a \code{\link[GenomicRanges]{GRanges}} object with bins of
 chromosome by given bin size.
 }
 \keyword{internal}
-

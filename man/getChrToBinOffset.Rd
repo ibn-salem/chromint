@@ -20,4 +20,3 @@ A numeric vector with offset for each chromosome.
 This function creates offset of bin indices for each chromosome.
 }
 \keyword{internal}
-
