@@ -28,15 +28,15 @@ parseCaptureHiC <- function(infile, seqInfo=NULL){
                        stringsAsFactors = FALSE)
 
   gr1 <- GenomicRanges::GRanges(
-      df$chr,
-      IRanges::IRanges(df$start, df$end),
+    df[,1],
+      IRanges::IRanges(df[,2], df[,3]),
       seqinfo = seqInfo,
       symbol = df$Symbol,
       ENSG = df$Ensembl.Gene.ID,
       expresssion.quartile = df$expresssion.quartile)
   gr2 <- GenomicRanges::GRanges(
-    df$chr.1,
-    IRanges::IRanges(df$start.1, df$end.1),
+    df[,7],
+    IRanges::IRanges(df[,8], df[,9]),
     seqinfo = seqInfo,
     symbol = df$Symbol.1,
     ENSG = df$Ensembl.Gene.ID.1,
@@ -47,7 +47,7 @@ parseCaptureHiC <- function(infile, seqInfo=NULL){
     gr1,
     gr2,
     raw.count = df$raw.count,
-    log.observed.expected = df$log.observed.expected
+    log.observed.expected = df$log.observed.expected.
   )
 
   return(gi)
