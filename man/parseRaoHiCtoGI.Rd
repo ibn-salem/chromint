@@ -2,35 +2,42 @@
 % Please edit documentation in R/parseRaoHiCtoGI.R
 \name{parseRaoHiCtoGI}
 \alias{parseRaoHiCtoGI}
-\title{Parse Hi-C interactions from Rao et. al 2014 as GInteractions object.}
+\title{Parse Hi-C interactions from Rao et. al 2014 as
+\code{\link[InteractionSet]{GInteractions}} object.}
 \usage{
-parseRaoHiCtoGI(cell, resolution, baseDir, seqInfo,
-  normalizeByExpected = FALSE, mapQualStr = "MAPQGE30", normStr = "KR")
+parseRaoHiCtoGI(cell, resolution, baseDir, seqInfo, interChromosomal = TRUE,
+  normalizeByExpected = FALSE, mapQual = "MAPQGE30", norm = "KR")
 }
 \arguments{
 \item{cell}{The cell type of the input experiment}
 
 \item{resolution}{The matrix resolution of the Hi-C map in bp}
 
-\item{baseDir}{The path to the directory with the Hi-C data. This should
-contain subdirectories for each cell-type}
+\item{baseDir}{The path to the directory with the Hi-C data.}
 
-\item{seqInfo}{A seqinfo object of the genome}
+\item{seqInfo}{A seqinfo object of the genome.}
+
+\item{interChromosomal}{logical idicating whether inter-chromosomal contacts
+should be parsed.}
 
 \item{normalizeByExpected}{Should contact frequencies be normalized by
 distance. Default is FALSE.}
 
-\item{mapQualStr}{String representing the mapping quality threshold. Defualt
+\item{mapQual}{String representing the mapping quality threshold. Defualt
 is "MAPQGE30".}
 
-\item{normStr}{String representation of the normalization method. Default is
+\item{norm}{String representation of the normalization method. Default is
 "KR". This is not implemented yet.}
 }
 \value{
-GInteractions object with all cis- and trans-interactions
+\code{\link[InteractionSet]{GInteractions}} object with all cis- and
+  trans-interactions
 }
 \description{
 This function parses interactions from a single experiment by a given
-resolution.
+resolution. It takes a path to a directory with uncompressed raw data and
+subdirectories for each cell-type. The data can be manually downloaded and
+from this url:
+\url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE63525}.
 }
 \keyword{Hi-C}
