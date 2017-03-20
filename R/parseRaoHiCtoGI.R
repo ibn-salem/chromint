@@ -158,15 +158,16 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   })
 
 	#--------------------------------------------------------------------
-	# parse intra-chromosomal interactions
+	# parse inter-chromosomal interactions
 	#--------------------------------------------------------------------
 
 	# build path to directory with chromosome subdirectories
 	interDir = file.path(baseDir,
 	                     paste0(
 	                       ifelse(cell != "GM12878", cell, paste0(cell, "_combined")),
-	                       "_interchromosomal"),
-	                        paste0(resStr, "_resolution_interchromosomal"))
+	                       ifelse(cell != "GM12878", "_interchromosomal", "")
+	                       ),
+	                     paste0(resStr, "_resolution_interchromosomal"))
 
 	message("INFO: Start parsing from director: ", interDir)
 
