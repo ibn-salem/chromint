@@ -165,7 +165,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 	interDir = file.path(baseDir,
 	                     paste0(
 	                       ifelse(cell != "GM12878", cell, paste0(cell, "_combined")),
-	                       ifelse(cell != "GM12878", "_interchromosomal", "")
+	                       "_interchromosomal"
 	                       ),
 	                     paste0(resStr, "_resolution_interchromosomal"))
 
