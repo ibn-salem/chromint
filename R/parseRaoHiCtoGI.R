@@ -107,7 +107,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   # build path to directory with chromosome subdirectories
   intraDir = file.path(baseDir, ifelse(cell != "GM12878", cell, paste0(cell, "_combined")),
                        paste0(resStr, "_resolution_intrachromosomal"))
-  message("INFO: Start parsing from director: ", intraDir)
+  message("INFO: Start parsing from directory: ", intraDir)
 
   # get all available chromosome names:
   chromosomes = list.dirs(path=intraDir , full.names = FALSE,
@@ -169,7 +169,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 	                       ),
 	                     paste0(resStr, "_resolution_interchromosomal"))
 
-	message("INFO: Start parsing from director: ", interDir)
+	message("INFO: Start parsing from directory: ", interDir)
 
 
 	# get all chromosome pair combination (ordered)
