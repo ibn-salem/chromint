@@ -52,6 +52,30 @@ getChrToBinOffset <- function(chromosomes, resolution, seqInfo){
   return(binOffset)
 }
 
+#' Normalize interaction matrix using normalization vector.
+#'
+#'
+#' Given the raw contact matrix \eqn{M \in R^{nxn}} and normalization vecotor \eqn{v \in
+#' R^{n}}, the normalized counts \eqn{M^{*}_{i,j} = M_{i,j} / (v_{i} * v_{j})} or
+#' written as matrix product \eqn{M^{*} = diag(v^{-1}) * M * diag(v^{-1})}.
+#' @param M a numeric \code{\link[Matrix]{Matrix}} with size n*n.
+#' @param v a numeric vector of size n.
+#' @return A \code{\link[Matrix]{Matrix}} with normalized counts.
+normalizeMatrix <- function(M, v){
+
+  # remove NaN values and replace it by 1 (This should not influence the normalization)
+  v[is.nan(v)] <- 1
+
+  # create a diagonal matrix of inverted normalization values
+  Vinv = Matrix::Diagonal(x = 1/v)
+
+  # normalize interaction matrix such as M*_ij = M_ij / v_i*v_j
+  Mnorm = Vinv %*% M %*% Vinv
+
+  return(Mnorm)
+
+}
+
 
 #' Parse Hi-C interactions from Rao et. al 2014 as
 #' \code{\link[InteractionSet]{GInteractions}} object.
