@@ -94,10 +94,11 @@ normalizeMatrix <- function(M, v){
 #'   should be parsed.
 #' @param normalizeByExpected Should contact frequencies be normalized by
 #'   distance. Default is FALSE.
-#' @param mapQual String representing the mapping quality threshold. Defualt
+#' @param mapQual character representing the mapping quality threshold. Defualt
 #'   is "MAPQGE30".
-#' @param norm String representation of the normalization method. Default is
-#'   "KR". This is not implemented yet.
+#' @param norm character representation of the normalization method to use.
+#'   Default is NULL meaning that no normalization is applied. Possible values
+#'   are "KR" or "VC". This is not impplemented yet.
 #' @keywords Hi-C
 #' @return \code{\link[InteractionSet]{GInteractions}} object with all cis- and
 #'   trans-interactions
@@ -106,7 +107,14 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
                             interChromosomal = TRUE,
                             normalizeByExpected = FALSE,
                             mapQual = "MAPQGE30",
-                            norm = "KR"){
+                            norm = NULL){
+  # check arguments
+  if (!is.null(norm)) stop("Normalization is not implemented yet, sorry.
+  See https://github.com/liz-is/readhic for an alternative approach to parse Rao data with normalization.")
+  if (interChromosomal && !is.null(norm)) {
+    stop("Inter-chromosomal contacts cannot be normalizd.
+    Please use either 'interChromosomal = FALSE' or nrom = NULL")
+  }
 
   # get all the proper file paths
   # An example path is:
@@ -115,18 +123,19 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 
   # map resolution in bp to kb/mb substring:
   res2str <- data.frame(
-    res=c(1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000),
-    resStr=as.character(c("1kb", "5kb", "10kb", "25kb", "50kb", "100kb", "250kb", "500kb", "1mb"))
+    res = c(1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000),
+    resStr = c("1kb", "5kb", "10kb", "25kb", "50kb", "100kb",
+                            "250kb", "500kb", "1mb"),
+    stringsAsFactors = FALSE
   )
 
   # to get proper string representation of the input resolution parameter
-  resStr <- as.character(
-    res2str$resStr[match(resolution, res2str$res)]
-    )
-  if(is.na(resStr)){
+  resStr <- res2str$resStr[match(resolution, res2str$res)]
+
+  if (is.na(resStr)) {
     stop("Input resolution is not supported. Input resolution: ", resolution,
          " Only the following resolutions are supported: ",
-         paste(res2str$res, collapse=", "))
+         paste(res2str$res, collapse = ", "))
   }
   # example path for GM12878
   # OLD: /project/jgu-cbdm/andradeLab/download/flat/databases/uncompressed/muro/ftp.ncbi.nlm.nih.gov/geo/series/GSE63nnn/GSE63525/suppl/GM12878_combined_interchromosomal/50kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_50kb.RAWobserved
@@ -137,7 +146,8 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   # /project/jgu-cbdm/ibnsalem/translocations/data/Rao2014/K562_interchromosomal/50kb_resolution_interchromosomal/chr1_chr2/MAPQGE30/chr1_2_50kb.RAWobserved
 
   # build path to directory with chromosome subdirectories
-  intraDir = file.path(baseDir, ifelse(cell != "GM12878", cell, paste0(cell, "_combined")),
+  intraDir = file.path(baseDir,
+                       ifelse(cell != "GM12878", cell, paste0(cell, "_combined")),
                        paste0(resStr, "_resolution_intrachromosomal"))
   message("INFO: Start parsing from directory: ", intraDir)
 
@@ -146,7 +156,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
                           recursive = FALSE)
 
   # throw a meaningfull error here if path is wrong
-  if( length(chromosomes) == 0 ){
+  if ( length(chromosomes) == 0 ) {
     stop("Could not find chromosomes in ", intraDir)
   }
 
@@ -159,7 +169,7 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   names(chromBinGR) <- chromosomes
 
 	# combine to binGR for entire genome
-	binGR <-unlist(GenomicRanges::GRangesList(chromBinGR))
+	binGR <- unlist(GenomicRanges::GRangesList(chromBinGR))
 
 	# get bin offsets
 	binOffset <- getChrToBinOffset(chromosomes, resolution, seqInfo)
@@ -179,11 +189,11 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 		intData <- data.frame(data.table::fread(rawInteractionFile))
 
 		# get anchor bins as GRanges object
-		anchorIdx1 <- binOffset[chr] + (intData[,1] / resolution) +1
-		anchorIdx2 <- binOffset[chr] + (intData[,2] / resolution) +1
+		anchorIdx1 <- binOffset[chr] + (intData[,1] / resolution) + 1
+		anchorIdx2 <- binOffset[chr] + (intData[,2] / resolution) + 1
 
 		# build data.frame with indexes and score
-		chrDF <- data.frame(idx1=anchorIdx1, idx2=anchorIdx2, raw=intData[,3])
+		chrDF <- data.frame(idx1 = anchorIdx1, idx2 = anchorIdx2, raw = intData[,3])
 
 		return(chrDF)
 
@@ -242,15 +252,17 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
   		intData <- data.frame(data.table::fread(rawInteractionFile))
 
   		# get anchor bins as GRanges object
-  		anchorIdx1 <- binOffset[chr1] + (intData[,1] / resolution) +1
-  		anchorIdx2 <- binOffset[chr2] + (intData[,2] / resolution) +1
+  		anchorIdx1 <- binOffset[chr1] + (intData[, 1] / resolution) + 1
+  		anchorIdx2 <- binOffset[chr2] + (intData[, 2] / resolution) + 1
 
   		# build data.frame with indexes and score
-  		chrPairDF <- data.frame(idx1=anchorIdx1, idx2=anchorIdx2, raw=intData[,3])
+  		chrPairDF <- data.frame(idx1 = anchorIdx1,
+  		                        idx2 = anchorIdx2,
+  		                        raw = intData[, 3])
 
   		return(chrPairDF)
 
-  	}, chromPairs[,1], chromPairs[,2], SIMPLIFY=FALSE)
+  	}, chromPairs[,1], chromPairs[,2], SIMPLIFY = FALSE)
 
   	# combine all data.frames into a single one
   	intDF <- as.data.frame(data.table::rbindlist(c(cisDFlist, transDFlist)))
@@ -260,18 +272,50 @@ parseRaoHiCtoGI <- function(cell, resolution, baseDir, seqInfo,
 	#--------------------------------------------------------------------
 	# build GI object
 	#--------------------------------------------------------------------
-	GI <- InteractionSet::GInteractions(
+	gi <- InteractionSet::GInteractions(
 	  intDF[, 1],
 	  intDF[, 2],
 	  binGR,
-	  raw=intDF[, 3],
-	  mode="strict")
+	  raw = intDF[, 3],
+	  mode = "strict")
+
+# 	#--------------------------------------------------------------------
+# 	# normalization of raw counts
+# 	#--------------------------------------------------------------------
+# 	if (!is.null(norm)) {
+# 	  for (chr in chromosomes) {
+#   	  normFile <- file.path(intraDir, chr, mapQual, paste0(chr, "_", resStr, ".", norm, "norm"))
+#   	  # expectedfile <- file.path(intraDir, chr, mapQual, paste0(chr, "_", resStr, ".", norm, "expected"))
+#
+#   	  # if KR normalization vector file is empty, the normalization did not converge
+#   	  # Rao et al suggest to take the VC or SQRTVC normalization in this case
+#   	  if (file.size(normFile) == 0 & norm=="KR"){
+#   	    normFile = file.path(intraDir, chr, mapQual, paste0(chr, "_", resStr, ".VCnorm"))
+#   	    # expectedfile = file.path(intraDir, chr, mapQual, paste0(chr, "_", resStr, ".VCexpected"))
+#   	  }
+#
+#   	  # parse normalization vector
+#   	  v <- read.delim(normFile, header = FALSE, colClasses="numeric")[,1]
+#
+#   	  # get
+#   	  cm <- InteractionSet::inflate(gi, chr,  chr, fill = gi$raw, sparse=TRUE)
+#
+#   	  cmNorm <- normalizeMatrix(cm, v)
+#
+#   	  chrIS <- InteractionSet::deflate(cmNorm)
+#   	  chrGI <- InteractionSet::interactions(chrIS)
+#   	  chrGI$norm <- InteractionSet::assay(chrIS)
+#
+#   	  intdata(hiCexp) = normalizeMatrix(intdata(hiCexp), v)
+#
+#     }
+#   }
 
 	# make user aware of object size
 	message(paste(
 	  "INFO: Finished parsing of interactions. GI object has size:",
-	  format(utils::object.size(GI), units = "auto")
+	  format(utils::object.size(gi), units = "auto")
 	  ))
 
-  return(GI)
+  return(gi)
 }

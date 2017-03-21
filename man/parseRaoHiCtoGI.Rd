@@ -6,7 +6,7 @@
 \code{\link[InteractionSet]{GInteractions}} object.}
 \usage{
 parseRaoHiCtoGI(cell, resolution, baseDir, seqInfo, interChromosomal = TRUE,
-  normalizeByExpected = FALSE, mapQual = "MAPQGE30", norm = "KR")
+  normalizeByExpected = FALSE, mapQual = "MAPQGE30", norm = NULL)
 }
 \arguments{
 \item{cell}{The cell type of the input experiment}
@@ -23,11 +23,12 @@ should be parsed.}
 \item{normalizeByExpected}{Should contact frequencies be normalized by
 distance. Default is FALSE.}
 
-\item{mapQual}{String representing the mapping quality threshold. Defualt
+\item{mapQual}{character representing the mapping quality threshold. Defualt
 is "MAPQGE30".}
 
-\item{norm}{String representation of the normalization method. Default is
-"KR". This is not implemented yet.}
+\item{norm}{character representation of the normalization method to use.
+Default is NULL meaning that no normalization is applied. Possible values
+are "KR" or "VC". This is not impplemented yet.}
 }
 \value{
 \code{\link[InteractionSet]{GInteractions}} object with all cis- and
